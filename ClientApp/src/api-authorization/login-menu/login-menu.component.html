@@ -1,0 +1,7 @@
+<span *ngIf="isAuthenticated | async">
+  <a mat-button [routerLink]='["/authentication/profile"]' title="Manage"><mat-icon>account_circle</mat-icon> {{ userName | async }}</a>
+  <a mat-button [routerLink]='["/authentication/logout"]' [state]='{ local: true }' title="Logout">Logout</a>
+</span>
+<span *ngIf="!(isAuthenticated | async)">
+  <a mat-button [routerLink]='["/authentication/login"]'>Login</a>
+</span>
