@@ -38,8 +38,8 @@ namespace A.Services
 
             var claims = principal.Claims.ToList();
             claims = claims.Where(claim => context.RequestedClaimTypes.Contains(claim.Type)).ToList();
-            claims.Add(new Claim(JwtClaimTypes.GivenName, user.Firstname));
-            claims.Add(new Claim(JwtClaimTypes.FamilyName, user.Lastname));
+            claims.Add(new Claim(JwtClaimTypes.GivenName, user.FirstName));
+            claims.Add(new Claim(JwtClaimTypes.FamilyName, user.LastName));
             claims.Add(new Claim("is_admin",isAdmin?"1":"0" ));
             context.IssuedClaims = claims;
         }

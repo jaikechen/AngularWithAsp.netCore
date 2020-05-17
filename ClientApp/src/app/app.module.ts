@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 
@@ -13,25 +13,34 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialUIComponent } from './MaterialUIComponent';
 import { MainNavComponent } from './main-nav/main-nav.component';
 import { UserComponent } from './users/user.component';
+import { StoreModule } from '@ngrx/store';
+import { EffectsModule } from '@ngrx/effects';
+import { appReducer } from '../_core/_store/app.reducer';
+import { ModelEffect } from '../_core/crud/model.effects';
+import { UserEditComponent } from './users/user.edit.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     HomeComponent,
     MainNavComponent,
-    UserComponent
+    UserComponent,
+    UserEditComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
     HttpClientModule,
     FormsModule,
+    ReactiveFormsModule,
     ApiAuthorizationModule,
+    StoreModule.forRoot(appReducer),
+    EffectsModule.forRoot([ModelEffect]),
+
     RouterModule.forRoot([
       {
         path: '',
         redirectTo: 'home',
         pathMatch: 'full'
-
       },
       {
         path: 'home',
@@ -40,6 +49,14 @@ import { UserComponent } from './users/user.component';
       {
         path: 'users',
         component: UserComponent, pathMatch: 'full', canActivate: [AuthorizeGuard]
+      },
+       {
+        path: 'users/add',
+        component: UserEditComponent, pathMatch: 'full', canActivate: [AuthorizeGuard]
+      },
+      {
+        path: 'users/edit/:id',
+        component: UserEditComponent, pathMatch: 'full', canActivate: [AuthorizeGuard]
       },
     ]),
     BrowserAnimationsModule,

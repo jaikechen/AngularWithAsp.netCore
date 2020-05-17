@@ -15,11 +15,11 @@ namespace Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class GuidesController : ControllerBase
+    public class GuideController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger _logger;
-        public GuidesController(ApplicationDbContext context,  ILogger<GuidesController> logger)
+        public GuideController(ApplicationDbContext context,  ILogger<GuideController> logger)
         {
             _context = context;
             _logger = logger;

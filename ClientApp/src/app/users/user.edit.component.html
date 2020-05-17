@@ -1,0 +1,110 @@
+  <div  class="mat-elevation-z8 container-fluid">
+    <h1 class="text-lg-center">{{getComponentTitle()}}</h1>
+    <form [formGroup]="itemForm" >
+        <div  *ngIf="hasFormErrors" >
+          <mat-error> Oh snap! Change a few things up and try submitting again.  </mat-error>
+        </div>
+         <mat-error> {{serverError$|async}} </mat-error>
+      <div class="row">
+
+        <div class="col-md-4">
+          <mat-form-field class="mat-form-field-fluid">
+            <input matInput placeholder="Enter Email(User Name)" formControlName="userName">
+            <mat-error>
+              Email (User Name) is
+              <strong>required</strong>
+            </mat-error>
+            <mat-hint>
+              Please enter
+              <strong>Email(User Name)</strong>
+            </mat-hint>
+          </mat-form-field>
+        </div>
+
+        <div class="col-md-4">
+          <mat-form-field class="mat-form-field-fluid">
+            <input matInput placeholder="Enter First Name" formControlName="firstName">
+            <mat-error>
+              First Name is
+              <strong>required</strong>
+            </mat-error>
+            <mat-hint>
+              Please enter
+              <strong>First Name</strong>
+            </mat-hint>
+          </mat-form-field>
+        </div>
+
+        
+        <div class="col-md-4" >
+          <mat-form-field class="mat-form-field-fluid">
+            <input matInput placeholder="Enter Last Name" formControlName="lastName">
+            <mat-error>
+              Last Name is
+              <strong>required</strong>
+            </mat-error>
+            <mat-hint>
+              Please enter
+              <strong>Last Name</strong>
+            </mat-hint>
+          </mat-form-field>
+        </div>
+         <div class="col-md-4 ">
+          <mat-form-field class="mat-form-field-fluid">
+            <input matInput  placeholder="Enter Password" formControlName="password">
+            <mat-error>
+              Password
+              <strong>required</strong>
+            </mat-error>
+            <mat-hint>
+              Please enter
+              <strong>Password</strong>
+            </mat-hint>
+          </mat-form-field>
+        </div>
+          <div class="col-md-4 ">
+          <mat-form-field class="mat-form-field-fluid">
+
+             <mat-select formControlName="role">
+                <mat-option></mat-option>
+                <mat-option value="admin">Admin</mat-option>
+                <mat-option value="user">User</mat-option>
+              </mat-select>
+
+            <mat-error>
+              Password
+              <strong>required</strong>
+            </mat-error>
+            <mat-hint >
+              Please select 
+              <strong>role</strong>
+            </mat-hint>
+          </mat-form-field>
+        </div>
+
+       <div class="col-md-4 ">
+          <mat-form-field class="mat-form-field-fluid">
+            <input matInput placeholder="Enter Phone Number" formControlName="phoneNumber">
+            <mat-error>
+              Phone Number
+              <strong>required</strong>
+            </mat-error>
+            <mat-hint>
+              Please enter
+              <strong>Phone Number</strong>
+            </mat-hint>
+          </mat-form-field>
+        </div>
+      </div>
+    </form>
+    <div style="padding:10px">
+
+      <mat-spinner *ngIf="actionLoading$ | async"></mat-spinner>
+
+        <a href="javascript:;" class="btn btn-primary" color="primary" (click)="onSumbit(false)" mat-raised-button matTooltip="Submit & Continue">
+        <span class="kt-hidden-mobile">Submit </span>
+      </a>
+    </div>
+  </div>
+
+
