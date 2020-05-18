@@ -15,12 +15,14 @@ export function getAdapter(item: ModelName): EntityAdapter<BaseModel> {
 export interface ModelState extends EntityState<BaseModel> {
   entityType: string;
   listLoading: boolean;
-  actionsloading: boolean;
   totalCount: number;
   lastCreatedId: number;
   lastQuery: QueryParamsModel;
   showInitWaitingMessage: boolean;
   isAllItemsLoaded: boolean;
+
+  actionsloading: boolean;
+  actionsdone: boolean;
   error: string;
 }
 
@@ -33,11 +35,12 @@ function getInitialState(item: ModelName): ModelState {
     isAllItemsLoaded: false,
     itemForEdit: null,
     listLoading: false,
-    actionsloading: false,
     totalCount: 0,
     lastCreatedId: undefined,
     lastQuery: new QueryParamsModel({}),
     showInitWaitingMessage: true,
+    actionsloading: false,
+    actionsdone: false,
     error: ''
   });
   return find;
@@ -70,19 +73,6 @@ export function modelReducer(stateArr = <ModelState[]>[], action: ModelActions):
       return pushState(stateArr, state);
     }
 
-    /*
-  case ActionTypes.: {
-    const adapter = getAdapter(action.payload.item);
-    let state = getState(stateArr, action.payload.item);
-    state = adapter.addAll(
-      action.payload.items,
-      {
-        ...state, isAllItemsLoaded: true
-      }
-    );
-    return pushState(stateArr, state);
-  }
-  */
 
 
     case ActionTypes.PageLoading: {
@@ -95,6 +85,7 @@ export function modelReducer(stateArr = <ModelState[]>[], action: ModelActions):
 
     case ActionTypes.ActionLoading: {
       let state = getState(stateArr, action.payload.item);
+
       state = { ...state, actionsloading: action.payload.isLoading, error: action.payload.error }
       return pushState(stateArr, state);
     }
@@ -117,20 +108,23 @@ export function modelReducer(stateArr = <ModelState[]>[], action: ModelActions):
       }
 
     case ActionTypes.ManyDeleted:
-    {
+      {
         const adapter = getAdapter(action.payload.item);
         let state = getState(stateArr, action.payload.item);
         state = adapter.removeMany(action.payload.ids, state);
         return pushState(stateArr, state);
-    }
+      }
 
-     case ActionTypes.Updated:
-    {
+    case ActionTypes.Updated:
+      {
         const adapter = getAdapter(action.payload.item);
         let state = getState(stateArr, action.payload.item);
         state = adapter.updateOne(action.payload.partialItems, state);
         return pushState(stateArr, state);
       }
+    default: return stateArr;
+  }
+}
 
 
     /*
@@ -152,6 +146,18 @@ export function modelReducer(stateArr = <ModelState[]>[], action: ModelActions):
     return state;
   }
    */
-    default: return stateArr;
+
+
+    /*
+  case ActionTypes.: {
+    const adapter = getAdapter(action.payload.item);
+    let state = getState(stateArr, action.payload.item);
+    state = adapter.addAll(
+      action.payload.items,
+      {
+        ...state, isAllItemsLoaded: true
+      }
+    );
+    return pushState(stateArr, state);
   }
-}
+  */

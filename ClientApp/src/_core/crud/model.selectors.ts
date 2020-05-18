@@ -46,6 +46,7 @@ export const selectActionResult = (item: ModelProto) => {
 
 
 
+/*
 class TypeSelector {
   entityType: string;
   selector: MemoizedSelector<object, ModelState>;
@@ -83,4 +84,5 @@ export function allLoaded<T extends BaseModel>(item: T) {
   );
 }
 
+*/
 
