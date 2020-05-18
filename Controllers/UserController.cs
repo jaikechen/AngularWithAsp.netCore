@@ -17,14 +17,12 @@ namespace Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
-   // [Authorize(Roles = ApplicationUser.ADMIN_ROLE)]
+    [Authorize(Roles = ApplicationUser.ADMIN_ROLE)]
     public class UserController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger _logger;
         UserManager<ApplicationUser> _userManager;
-        RoleManager<IdentityRole> _roleManager; 
         public UserController(ApplicationDbContext context, 
             ILogger<GuideController> logger,
                 UserManager<ApplicationUser> userManager, 
@@ -34,16 +32,12 @@ namespace Controllers
             _context = context;
             _logger = logger;
               _userManager = userManager;
-            _roleManager = roleManager;
         }
 
         [HttpGet]
         public async Task<ActionResult<PagedResult<UserDTO>>> Get(
             int pageSize, int pageNumber, string sortField, string sortOrder, string name)
         {
-          //  var usr = User;
-          //  var appuser = await _userManager.FindByNameAsync (User.Identity.Name);
-           // _logger.LogInformation(appuser.Id);
             if (sortField == "id")
             {
                 sortField = "UserIDid";
@@ -95,14 +89,20 @@ namespace Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put([FromRoute]int id,[FromBody] Guide item)
+        public async Task<IActionResult> Put([FromRoute]int id,[FromBody] UserDTO dto)
         {
-            if (id != item.id)
+            if (id != dto.id)
             {
                 return BadRequest();
             }
 
+            var item = _context.ApplicationUser.FirstOrDefault(x => x.UserIDid == dto.id);
             _context.Entry(item).State = EntityState.Modified;
+
+            item.FirstName = dto.FirstName;
+            item.LastName = dto.LastName;
+            item.Role = dto.Role;
+            item.PhoneNumber = dto.PhoneNumber;
 
             try
             {
@@ -128,7 +128,7 @@ namespace Controllers
         {
             try
             {
-                _context.AddUser(_userManager, _roleManager, item,true);
+                _context.AddUser(_userManager, item,true);
                 return CreatedAtAction("Get", new { item.id }, item);
             }
             catch (System.Exception ex)
@@ -139,51 +139,21 @@ namespace Controllers
         
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Guide>> Delete(int id)
+        public async Task<ActionResult<UserDTO>> Delete(int id)
         {
-            var item = await _context.Guide.FindAsync(id);
+            var item = _context.ApplicationUser.FirstOrDefault(x => x.UserIDid == id);
             if (item == null)
             {
                 return NotFound();
             }
-
             _context.Remove(item);
             await _context.SaveChangesAsync();
-
-            return item;
+            return new UserDTO(item);
         }
 
         private bool Exists(int id)
         {
             return _context.Guide.Any(e => e.id == id);
         }
-
-        [HttpPost("[action]")]
-        public bool sendMailApproval(int id)
-        {
-            return true;
-        }
-
-        [HttpPost("[action]")]
-        public IFormFile ReturnFormFile(FileStreamResult result)
-        {
-            var ms = new MemoryStream();
-            try
-            {
-                result.FileStream.CopyTo(ms);
-                return new FormFile(ms, 0, ms.Length,"File","File");
-            }
-            catch (Exception e)
-            {
-                ms.Dispose();
-                throw;
-            }
-            finally
-            {
-                ms.Dispose();
-            }
-        }
-
-
     }
 }

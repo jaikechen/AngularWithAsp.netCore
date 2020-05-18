@@ -112,10 +112,11 @@ export function modelReducer(stateArr = <ModelState[]>[], action: ModelActions):
       {
         const adapter = getAdapter(action.payload.item);
         let state = getState(stateArr, action.payload.item);
-        state = adapter.removeOne(action.payload.item.id.toString(), state);
+        state = adapter.removeOne(action.payload.id, state);
         return pushState(stateArr, state);
       }
-        case ActionTypes.ManyDeleted:
+
+    case ActionTypes.ManyDeleted:
     {
         const adapter = getAdapter(action.payload.item);
         let state = getState(stateArr, action.payload.item);
@@ -123,26 +124,17 @@ export function modelReducer(stateArr = <ModelState[]>[], action: ModelActions):
         return pushState(stateArr, state);
     }
 
+     case ActionTypes.Updated:
+    {
+        const adapter = getAdapter(action.payload.item);
+        let state = getState(stateArr, action.payload.item);
+        state = adapter.updateOne(action.payload.partialItems, state);
+        return pushState(stateArr, state);
+      }
+
+
     /*
  
-  case ActionTypes.OnServerCreated:
-    {
-      const entityType = action.payload.item.constructor.name;
-      let typeState = getStateByType(state, entityType);
-      typeState = { ...typeState };
-      return state;
-    }
-  
-
-  case ActionTypes.Updated:
-    {
-      const entityType = action.payload.item.constructor.name;
-      const adapter = getAdapterByType(entityType);
-      let typeState = getStateByType(state, entityType);
-
-      typeState = adapter.updateOne(action.payload.partialItems, typeState);
-      return state;
-    }
   case ActionTypes.StatusUpdated: {
     const entityType = action.payload.item.constructor.name;
     const adapter = getAdapterByType(entityType);
@@ -159,32 +151,7 @@ export function modelReducer(stateArr = <ModelState[]>[], action: ModelActions):
     typeState = adapter.updateMany(_partialItems, typeState);
     return state;
   }
-  case ActionTypes.OneDeleted:
-    {
-
-      const entityType = action.payload.item.constructor.name;
-      const adapter = getAdapterByType(entityType);
-      let typeState = getStateByType(state, entityType);
-      typeState = adapter.removeOne(action.payload.item.id.toString(), typeState);
-
-      return [...state.filter(x => x.entityType != entityType), typeState];
-    }
-  case ActionTypes.ManyDeleted:
-    {
-      const entityType = action.payload.item.constructor.name;
-      const adapter = getAdapterByType(entityType);
-      let typeState = getStateByType(state, entityType);
-      typeState = adapter.removeMany(action.payload.ids, typeState);
-      return state;
-    }
-  case ActionTypes.PageCancelled: {
-    const entityType = action.payload.item.constructor.name;
-    let typeState = getStateByType(state, entityType);
-    typeState = {
-      ...typeState, listLoading: false, lastQuery: new QueryParamsModel({})
-    };
-    return state;
-  }*/
+   */
     default: return stateArr;
   }
 }

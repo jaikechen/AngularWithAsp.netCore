@@ -22,12 +22,9 @@ namespace A
             var serviceProvider = host.Services.CreateScope().ServiceProvider;
             var context = serviceProvider.GetService<ApplicationDbContext>();
             var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-            context.Seed(userManager, roleManager);
+            context.Seed(userManager );
             host.Run();
-
         }
-
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>

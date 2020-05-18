@@ -10,28 +10,12 @@ import { ModelService } from './model.service';
 import { QueryResultsModel } from './query-results.model';
 import { QueryParamsModel } from './query-params.model';
 import { AppState } from '../_store/app.reducer';
-import { PageRequest, ActionTypes, showPageLoading, PageLoaded, Created, showActionLoading, hideActionLoading, Deleted, ManyDeleted, ManyDeleteRequest } from './model.action';
+import { PageRequest, ActionTypes, showPageLoading, PageLoaded, Created, showActionLoading, hideActionLoading, Deleted, ManyDeleted, ManyDeleteRequest, CreateRequest, DeleteRequst, StatusUpdateRequest, UpdateRequest, Updated } from './model.action';
 
 
 @Injectable()
 export class ModelEffect {
-  /*
-	@Effect()
-	loadAll$ = this.actions$
-      .pipe(
-        ofType(ActionTypes.AllItemsRequested),
-        withLatestFrom(this.store.pipe(select(allLoaded))),
-			filter(([action, isAllItemsLoaded]) => {
-			
-				return !isAllItemsLoaded;
-			}),
-			mergeMap(() => this.service.getAll()),
-        map(x => {
-          
-          return new AllLoaded({ entity: x. });
-			})
-        );
-   */
+ 
 
   @Effect()
   loadPage$ = this.actions$
@@ -60,7 +44,7 @@ export class ModelEffect {
   @Effect()
   serverCreate$ = this.actions$
       .pipe(
-        ofType<Created>(ActionTypes.Created),
+        ofType<CreateRequest>(ActionTypes.CreateRequest),
         mergeMap(({ payload }) => {
           this.store.dispatch(showActionLoading(payload.item));
         return this.service.create(payload.item).pipe(
@@ -77,16 +61,35 @@ export class ModelEffect {
    @Effect()
   delete$ = this.actions$
        .pipe(
-         ofType<Deleted>(ActionTypes.DeleteRequst),
-      mergeMap(({ payload }) => {
-        this.store.dispatch(showActionLoading(payload.item));
-        return this.service.delete(payload.item).pipe(
-          map(() => hideActionLoading(payload.item, null)),
-          catchError((err) => { return of(hideActionLoading(payload.item, err.error)); }
-          )
+         ofType<DeleteRequst>(ActionTypes.DeleteRequst),
+         mergeMap(({ payload }) => {
+           this.store.dispatch(showActionLoading(payload.item));
+           return this.service.delete(payload.item, payload.id).pipe(
+             map(() => {
+               this.store.dispatch(new Deleted(payload));
+               return hideActionLoading(payload.item, null)
+             }),
+          catchError((err) => { return of(hideActionLoading(payload.item, err.error)); } )
         );
       })
     );
+
+   @Effect()
+  update$ = this.actions$
+    .pipe(
+      ofType<UpdateRequest>(ActionTypes.UpdateRequest),
+      mergeMap(({ payload }) => {
+        this.store.dispatch(showActionLoading(payload.item));
+        return this.service.update(payload.item).pipe(
+          map(() => {
+            this.store.dispatch(new Updated(payload))
+            return hideActionLoading(payload.item, null)
+          }),
+          catchError((err) => { return of(hideActionLoading(payload.item, err.error)); })
+        );
+      })
+    );
+
 
    @Effect()
   deleteItems$ = this.actions$
@@ -106,6 +109,30 @@ export class ModelEffect {
       }
       )
     );
+
+
+
+  constructor(private actions$: Actions, private service: ModelService, private store: Store<AppState>) { }
+}
+
+
+ /*
+	@Effect()
+	loadAll$ = this.actions$
+      .pipe(
+        ofType(ActionTypes.AllItemsRequested),
+        withLatestFrom(this.store.pipe(select(allLoaded))),
+			filter(([action, isAllItemsLoaded]) => {
+			
+				return !isAllItemsLoaded;
+			}),
+			mergeMap(() => this.service.getAll()),
+        map(x => {
+          
+          return new AllLoaded({ entity: x. });
+			})
+        );
+   */
 
   /*
  
@@ -143,6 +170,3 @@ export class ModelEffect {
 
  
     */
-
-  constructor(private actions$: Actions, private service: ModelService, private store: Store<AppState>) { }
-}

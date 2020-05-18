@@ -35,7 +35,7 @@ export const selectInitWaitingMessage = (item: ModelProto) =>
 export const selectModelById = (item: ModelProto, itemId: number) =>
   createSelector(selectState, state =>getState(state,createModel(item)).entities[itemId]);
 
-export const selectError = (item: ModelProto) => {
+export const selectActionResult = (item: ModelProto) => {
   return createSelector(selectState, state => {
     return getState(state, createModel(item)).error;
   });

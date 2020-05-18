@@ -53,6 +53,7 @@ namespace A
             });
 
             services.AddScoped<IProfileService, IdentityClaimsProfileService>();
+            services.AddTransient<IClaimsTransformation, MyClaimsTransformer>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

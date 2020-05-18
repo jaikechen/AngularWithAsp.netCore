@@ -58,8 +58,8 @@ export class ModelService {
 		return this.http.put<T>(url, body, { headers: httpHeaders });
 	}
 
-	delete<T extends BaseModel>(item:T): Observable<T> {
-		const url = `${this.getURL(item)}/${item.id}`;
+	delete<T extends BaseModel>(item:T, id:number): Observable<T> {
+		const url = `${this.getURL(item)}/${id}`;
 		return this.http.delete<T>(url);
 	}
 

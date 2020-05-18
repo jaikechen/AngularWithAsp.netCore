@@ -24,30 +24,18 @@ namespace A.Data
         public DbSet<Guide> Guide { get; set; }
         public DbSet<ApplicationUser> ApplicationUser{get;set;}
 
+        
         public void AddUser(UserManager<ApplicationUser> userManager, 
-            RoleManager<IdentityRole> roleManager, 
             UserDTO user,
             bool alertExists)
         {
-            var role = roleManager.FindByNameAsync(user.Role).Result;
-            if (role == null)
-            {
-                role = new IdentityRole
-                {
-                    Name = user.Role
-                };
-                roleManager.CreateAsync(role).Wait();
-            }
-
             if (userManager.FindByNameAsync(user.UserName).Result == null)
             {
                 var appUser = user.ToEntity();
                 appUser.UserID = new UserID();
-               
                 IdentityResult result = userManager.CreateAsync (appUser, user.Password).Result;
                 if (result.Succeeded)
                 {
-                    userManager.AddToRoleAsync(appUser, appUser.Role).Wait();
                     user.id = appUser.UserIDid;
                 }
                 else
@@ -63,9 +51,30 @@ namespace A.Data
                 }
             }
         }
-        public void Seed(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
+
+        public async void UpdateUser(UserManager<ApplicationUser> userManager, UserDTO userDTO)
         {
-            AddUser(userManager, roleManager, new UserDTO
+            var usr =await userManager.FindByNameAsync(userDTO.UserName);
+            if(usr ==null)
+            {
+                throw new Exception("the user does not exist");
+            }
+            else
+            {
+                usr.PhoneNumber = userDTO.PhoneNumber;
+                usr.FirstName = userDTO.FirstName;
+                usr.LastName = userDTO.LastName;
+                usr.Role = userDTO.Role;
+            }
+            var result = await userManager.UpdateAsync(usr);
+            if(!result.Succeeded)
+            {
+                throw new Exception(result.Errors.Select(x => x.Description).Merge());
+            }
+        }
+        public void Seed(UserManager<ApplicationUser> userManager)
+        {
+            AddUser(userManager, new UserDTO
             {
                 Role = Models.ApplicationUser.ADMIN_ROLE, 
                 UserName = "admin@a.com",

@@ -12,20 +12,20 @@ import { AuthorizeInterceptor } from 'src/api-authorization/authorize.intercepto
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialUIComponent } from './MaterialUIComponent';
 import { MainNavComponent } from './main-nav/main-nav.component';
-import { UserComponent } from './users/user.component';
 import { StoreModule } from '@ngrx/store';
 import { EffectsModule } from '@ngrx/effects';
 import { appReducer } from '../_core/_store/app.reducer';
 import { ModelEffect } from '../_core/crud/model.effects';
-import { UserEditComponent } from './users/user.edit.component';
 import { ConfirmDialogComponent } from './_share/confirm.dialog.component';
+import { UserListComponent } from './users/user-list.component';
+import { UserEditComponent } from './users/user-edit.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     HomeComponent,
     MainNavComponent,
-    UserComponent,
+    UserListComponent,
     UserEditComponent,
     ConfirmDialogComponent
   ],
@@ -50,7 +50,7 @@ import { ConfirmDialogComponent } from './_share/confirm.dialog.component';
       },
       {
         path: 'users',
-        component: UserComponent, pathMatch: 'full', canActivate: [AuthorizeGuard]
+        component: UserListComponent, pathMatch: 'full', canActivate: [AuthorizeGuard]
       },
        {
         path: 'users/add',

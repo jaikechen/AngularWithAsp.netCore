@@ -28,12 +28,14 @@ export enum ActionTypes {
 
 export class Deleted implements Action {
 	readonly type = ActionTypes.Deleted;
-	constructor(public payload: {item: BaseModel  }) { }
+	constructor(public payload: {item: BaseModel,id:number}) { }
 }
 
+export const getDeleteRequest = <T extends BaseModel>(type: new () => T, id: number) =>
+  new DeleteRequst({ item: new type(), id })
 export class DeleteRequst implements Action {
 	readonly type = ActionTypes.DeleteRequst;
-	constructor(public payload: {item: BaseModel  }) { }
+	constructor(public payload: {item:BaseModel, id:number   }) { }
 }
 
 export class ManyDeleted implements Action {
@@ -82,20 +84,25 @@ export class Created implements Action {
 }
 
 
-export const getUpdateRequest = <T extends BaseModel>(item: T) => new CreateRequest({ item });
+export const getUpdateRequest = <T extends BaseModel>(item:T,  partialItems: Update<BaseModel>) => new UpdateRequest(
+  {
+    item,
+    partialItems
+  });
+
 export class UpdateRequest implements Action {
   readonly type = ActionTypes.UpdateRequest;
 	constructor(public payload: {
-		partialItems: Update<BaseModel>, 
 		item: BaseModel 
+		partialItems: Update<BaseModel>, 
 	}) { }
 }
 
 export class Updated implements Action {
 	readonly type = ActionTypes.Updated;
 	constructor(public payload: {
-		partialItems: Update<BaseModel>, 
 		item: BaseModel 
+		partialItems: Update<BaseModel>, 
 	}) { }
 }
 
@@ -117,12 +124,19 @@ export class PageLoading  implements Action {
 	constructor(public payload: {item: BaseModel, isLoading: boolean }) { }
 }
 
+export const ACTION_SUCCESS = "Action Sucess";
 
 export const showActionLoading = (item: BaseModel) => new ActionLoading({ item, isLoading: true, error:null });
-export const hideActionLoading = (item: BaseModel, error:string) => new ActionLoading({ item, isLoading: false,error });
+export const hideActionLoading = (item: BaseModel, error: string) => new ActionLoading({
+  item, isLoading: false,
+  error:error == null ? ACTION_SUCCESS: error });
 export class ActionLoading  implements Action {
 	readonly type = ActionTypes.ActionLoading;
-	constructor(public payload: { item: BaseModel, isLoading: boolean, error:string}) { }
+  constructor(public payload: {
+    item: BaseModel,
+    isLoading: boolean,
+    error: string
+  }) { }
 }
 
 

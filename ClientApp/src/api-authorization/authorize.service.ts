@@ -33,7 +33,7 @@ export interface IUser {
   name?: string;
   family_name?: string;
   given_name?: string;
-  is_admin?: string;
+  role?: string;
 }
 
 @Injectable({

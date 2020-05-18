@@ -15,17 +15,17 @@ import { ModelDataSource } from '../../_core/crud/model.datasource';
 import { User } from './User';
 import { AppState } from '../../_core/_store/app.reducer';
 import { QueryParamsModel } from '../../_core/crud/query-params.model';
-import {  GetPageRequested, ManyDeleteRequest, getManyDeleteRequest } from '../../_core/crud/model.action';
+import {  GetPageRequested, ManyDeleteRequest, getManyDeleteRequest, DeleteRequst, getDeleteRequest, ACTION_SUCCESS } from '../../_core/crud/model.action';
 import { ConfirmDialogModel, createConfirmDialog } from '../_share/confirm.dialog.component';
-import { selectActionLoading, selectError } from '../../_core/crud/model.selectors';
+import { selectActionLoading, selectActionResult,  } from '../../_core/crud/model.selectors';
 // Services and Model
 @Component({
 	selector: 'user-list',
-	templateUrl: './user.component.html',
+  templateUrl: './user-list.component.html',
 	changeDetection: ChangeDetectionStrategy.OnPush,
 })
 
-export class UserComponent implements OnInit, OnDestroy {
+export class UserListComponent implements OnInit, OnDestroy {
 	dataSource: ModelDataSource<User>;
   displayedColumns = ['select', 'userName', 'firstName', 'lastName','phoneNumber','role','actions'];
 
@@ -36,12 +36,10 @@ export class UserComponent implements OnInit, OnDestroy {
 	filterType = '';
 	selection = new SelectionModel<User>(true, []);
 	result: User[] = [];
-	private subscriptions: Subscription[] = [];
   serverError$: Observable<string>;
   actionLoading$: Observable<boolean>;
 
-
-	
+	private subscriptions: Subscription[] = [];
 
 	constructor(
 		public dialog: MatDialog,
@@ -53,8 +51,8 @@ export class UserComponent implements OnInit, OnDestroy {
 
 	ngOnInit() {
 
-    this.actionLoading$ = this.store.pipe( select(selectActionLoading(User)));
-    this.serverError$ = this.store.pipe(select(selectError(User)), filter(x => !!x));
+    this.actionLoading$ = this.store.pipe(select(selectActionLoading(User)));
+    this.serverError$ = this.store.pipe(select(selectActionResult(User)), filter(x => !!x && x != ACTION_SUCCESS));
 
 		const sortSubscription = this.sort.sortChange.subscribe(() => (this.paginator.pageIndex = 0));
 		this.subscriptions.push(sortSubscription);
@@ -124,66 +122,31 @@ export class UserComponent implements OnInit, OnDestroy {
 		return filter;
 	}
 
-	delete(_item: User) {
+	delete(item: User) {
 		const title: string = "Delete Item";
 		const description: string = "Are you sure Delete this Item";
-		const _waitDesciption: string = "Deleting";
-		const _deleteMessage = "The Item was deleted";
 
     const dialogRef = createConfirmDialog(title, description, this.dialog);
     dialogRef.afterClosed().subscribe(dialogResult => {
-      this.result = dialogResult;
+      if (!!dialogResult) {
+        this.store.dispatch(getDeleteRequest(User,item.id))
+      }
     });
+ 	}
 
-   
-    
-    /*
-		const dialogRef = this.layoutUtilsService.deleteElement(_title, _description, _waitDesciption);
-		dialogRef.afterClosed().subscribe(res => {
-			if (!res) {
-				return;
-			}
-
-			this.store.dispatch(new GuideOneDeleted({ id: _item.id }));
-			this.layoutUtilsService.showActionNotification(_deleteMessage, MessageType.Delete);
-		});
-    */
-	}
-
-	/**
-	 * Delete selected customers
-	 */
 	deleteItems() {
 
 		const title: string = "Delete Items";
 		const message: string = "Are you sure Delete these Items";
-		const _waitDesciption: string = "Deleting";
-		const _deleteMessage = "The Items was deleted";
-
     const dialogRef = createConfirmDialog(title, message, this.dialog);
-
-
 		dialogRef.afterClosed().subscribe(res => {
       if (!!res) {
         const ids = this.selection.selected.map(x => x.id);
         this.store.dispatch(getManyDeleteRequest(User, ids));
 			}
-
-      /*
-			const idsForDeletion: number[] = [];
-			for (let i = 0; i < this.selection.selected.length; i++) {
-				idsForDeletion.push(this.selection.selected[i].id);
-      }
-      this.store.dispatch(new GuideManyDeleted({ ids: idsForDeletion }));
-			this.layoutUtilsService.showActionNotification(_deleteMessage, MessageType.Delete);
-			this.selection.clear();
-      */
 		});
 	}
 
-	/**
-	 * Fetch selected customers
-	 */
 	fetch() {
 		const messages = [];
 		this.selection.selected.forEach(elem => {
@@ -235,7 +198,7 @@ export class UserComponent implements OnInit, OnDestroy {
 
 	edit(item: User) {
 
-    this.router.navigate(['/guides/edit', item.id]);
+    this.router.navigate(['/users/edit', item.id]);
 //    this.router.navigate(['guides/edit', item.id], { relativeTo: this.activatedRoute });
 	}
 

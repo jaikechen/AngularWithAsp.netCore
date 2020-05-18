@@ -101,7 +101,12 @@
 
       <mat-spinner *ngIf="actionLoading$ | async"></mat-spinner>
 
-        <a href="javascript:;" class="btn btn-primary" color="primary" (click)="onSumbit(false)" mat-raised-button matTooltip="Submit & Continue">
+       <a *ngIf="item" href="javascript:;" class="btn btn-primary" color="primary" (click)="reset()" mat-raised-button matTooltip="Submit & Continue">
+        <span class="kt-hidden-mobile">Reset </span>
+      </a>
+      &nbsp;
+
+      <a href="javascript:;" class="btn btn-primary" color="primary" (click)="onSumbit(false)" mat-raised-button matTooltip="Submit & Continue">
         <span class="kt-hidden-mobile">Submit </span>
       </a>
     </div>

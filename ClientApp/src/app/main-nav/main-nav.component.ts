@@ -34,7 +34,7 @@ export class MainNavComponent {
   ) {}
   ngOnInit() {
     this.menuItems =  this.authorizeService.getUser().pipe(
-       map(u => !u?[]: u.is_admin == "1" ? this.adminMenu : this.userMenu)
+       map(u => !u?[]: u.role == "admin" ? this.adminMenu : this.userMenu)
     );
   }
 }
