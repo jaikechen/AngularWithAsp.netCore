@@ -18,6 +18,7 @@ import { EffectsModule } from '@ngrx/effects';
 import { appReducer } from '../_core/_store/app.reducer';
 import { ModelEffect } from '../_core/crud/model.effects';
 import { UserEditComponent } from './users/user.edit.component';
+import { ConfirmDialogComponent } from './_share/confirm.dialog.component';
 
 @NgModule({
   declarations: [
@@ -25,7 +26,8 @@ import { UserEditComponent } from './users/user.edit.component';
     HomeComponent,
     MainNavComponent,
     UserComponent,
-    UserEditComponent
+    UserEditComponent,
+    ConfirmDialogComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
@@ -65,6 +67,7 @@ import { UserEditComponent } from './users/user.edit.component';
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthorizeInterceptor, multi: true }
   ],
+   entryComponents: [ConfirmDialogComponent],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

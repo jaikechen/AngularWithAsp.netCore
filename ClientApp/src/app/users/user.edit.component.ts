@@ -9,7 +9,7 @@ import { User } from './User';
 import { AppState } from '../../_core/_store/app.reducer';
 import { ModelService } from '../../_core/crud/model.service';
 import { selectLastCreatedModelId, selectModelById, selectError, selectPageLoading, selectActionLoading } from '../../_core/crud/model.selectors';
-import { GetServerCreate, Updated } from '../../_core/crud/model.action';
+import { Updated, getCreateRequest } from '../../_core/crud/model.action';
 
 @Component({
   selector: 'user-edit',
@@ -176,7 +176,7 @@ export class UserEditComponent implements OnInit, OnDestroy {
 
 
   addItem(_item: User) {
-    this.store.dispatch(GetServerCreate(_item));
+    this.store.dispatch(getCreateRequest(_item));
     this.componentSubscriptions = this.store.pipe(
       delay(1),
       select(selectLastCreatedModelId(User)),

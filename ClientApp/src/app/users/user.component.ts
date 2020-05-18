@@ -7,15 +7,17 @@ import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import {MatSort} from '@angular/material/sort';
 import {MatSnackBar} from '@angular/material/snack-bar';
 
-import { debounceTime, distinctUntilChanged, tap, skip, delay, take } from 'rxjs/operators';
-import { fromEvent, merge, Subscription, of } from 'rxjs';
-import { Store  } from '@ngrx/store';
+import { debounceTime, distinctUntilChanged, tap, skip, delay, take, filter } from 'rxjs/operators';
+import { fromEvent, merge, Subscription, of, Observable } from 'rxjs';
+import { Store, select  } from '@ngrx/store';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ModelDataSource } from '../../_core/crud/model.datasource';
 import { User } from './User';
 import { AppState } from '../../_core/_store/app.reducer';
 import { QueryParamsModel } from '../../_core/crud/query-params.model';
-import { PageRequested, GetPageRequested } from '../../_core/crud/model.action';
+import {  GetPageRequested, ManyDeleteRequest, getManyDeleteRequest } from '../../_core/crud/model.action';
+import { ConfirmDialogModel, createConfirmDialog } from '../_share/confirm.dialog.component';
+import { selectActionLoading, selectError } from '../../_core/crud/model.selectors';
 // Services and Model
 @Component({
 	selector: 'user-list',
@@ -35,6 +37,10 @@ export class UserComponent implements OnInit, OnDestroy {
 	selection = new SelectionModel<User>(true, []);
 	result: User[] = [];
 	private subscriptions: Subscription[] = [];
+  serverError$: Observable<string>;
+  actionLoading$: Observable<boolean>;
+
+
 	
 
 	constructor(
@@ -46,6 +52,10 @@ export class UserComponent implements OnInit, OnDestroy {
 
 
 	ngOnInit() {
+
+    this.actionLoading$ = this.store.pipe( select(selectActionLoading(User)));
+    this.serverError$ = this.store.pipe(select(selectError(User)), filter(x => !!x));
+
 		const sortSubscription = this.sort.sortChange.subscribe(() => (this.paginator.pageIndex = 0));
 		this.subscriptions.push(sortSubscription);
 
@@ -115,11 +125,18 @@ export class UserComponent implements OnInit, OnDestroy {
 	}
 
 	delete(_item: User) {
-		const _title: string = "Delete Item";
-		const _description: string = "Are you sure Delete this Item";
+		const title: string = "Delete Item";
+		const description: string = "Are you sure Delete this Item";
 		const _waitDesciption: string = "Deleting";
 		const _deleteMessage = "The Item was deleted";
 
+    const dialogRef = createConfirmDialog(title, description, this.dialog);
+    dialogRef.afterClosed().subscribe(dialogResult => {
+      this.result = dialogResult;
+    });
+
+   
+    
     /*
 		const dialogRef = this.layoutUtilsService.deleteElement(_title, _description, _waitDesciption);
 		dialogRef.afterClosed().subscribe(res => {
@@ -138,19 +155,21 @@ export class UserComponent implements OnInit, OnDestroy {
 	 */
 	deleteItems() {
 
-		const _title: string = "Delete Items";
-		const _description: string = "Are you sure Delete these Items";
+		const title: string = "Delete Items";
+		const message: string = "Are you sure Delete these Items";
 		const _waitDesciption: string = "Deleting";
 		const _deleteMessage = "The Items was deleted";
 
+    const dialogRef = createConfirmDialog(title, message, this.dialog);
 
-    /*
-		const dialogRef = this.layoutUtilsService.deleteElement(_title, _description, _waitDesciption);
+
 		dialogRef.afterClosed().subscribe(res => {
-			if (!res) {
-				return;
+      if (!!res) {
+        const ids = this.selection.selected.map(x => x.id);
+        this.store.dispatch(getManyDeleteRequest(User, ids));
 			}
 
+      /*
 			const idsForDeletion: number[] = [];
 			for (let i = 0; i < this.selection.selected.length; i++) {
 				idsForDeletion.push(this.selection.selected[i].id);
@@ -158,8 +177,8 @@ export class UserComponent implements OnInit, OnDestroy {
       this.store.dispatch(new GuideManyDeleted({ ids: idsForDeletion }));
 			this.layoutUtilsService.showActionNotification(_deleteMessage, MessageType.Delete);
 			this.selection.clear();
+      */
 		});
-    */
 	}
 
 	/**

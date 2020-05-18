@@ -6,13 +6,11 @@ import { Store, Action, select } from '@ngrx/store';
 import { defer, Observable, of } from 'rxjs';
 
 
-import { ActionTypes, PageRequested, PageLoading, PageLoaded, ServerCreate, ActionLoading, Created, showPageLoading, showActionLoading, hideActionLoading, addError } from './model.action';
 import { ModelService } from './model.service';
-import { ModelState } from './model.reducers';
-import { BaseModel } from './base.model';
 import { QueryResultsModel } from './query-results.model';
 import { QueryParamsModel } from './query-params.model';
 import { AppState } from '../_store/app.reducer';
+import { PageRequest, ActionTypes, showPageLoading, PageLoaded, Created, showActionLoading, hideActionLoading, Deleted, ManyDeleted, ManyDeleteRequest } from './model.action';
 
 
 @Injectable()
@@ -38,7 +36,7 @@ export class ModelEffect {
   @Effect()
   loadPage$ = this.actions$
     .pipe(
-      ofType<PageRequested>(ActionTypes.PageRequested),
+      ofType<PageRequest>(ActionTypes.PageRequest),
       mergeMap(({ payload }) => {
         this.store.dispatch(showPageLoading(payload.item));
         const requestToServer = this.service.find(payload.item, payload.page);
@@ -48,6 +46,7 @@ export class ModelEffect {
       map(response => {
         const result: QueryResultsModel = response[0];
         const lastQuery: QueryParamsModel = response[1];
+        console.log(result);
         return new PageLoaded({
           item: result.item,
           items: result.items,
@@ -60,52 +59,60 @@ export class ModelEffect {
 
   @Effect()
   serverCreate$ = this.actions$
-    .pipe(
-      ofType<ServerCreate>(ActionTypes.OnServerCreated),
-      mergeMap(({ payload }) => {
-        this.store.dispatch(showActionLoading(payload.item));
+      .pipe(
+        ofType<Created>(ActionTypes.Created),
+        mergeMap(({ payload }) => {
+          this.store.dispatch(showActionLoading(payload.item));
         return this.service.create(payload.item).pipe(
           map(item => {
-            this.store.dispatch(new Created({item: payload.item ,newItem: item}));
-            return hideActionLoading(payload.item,null);
+            this.store.dispatch(new Created({ item: payload.item, newItem: item }));
+            return hideActionLoading(payload.item, null);
           }),
-          catchError((err) => {
-            return of( hideActionLoading(payload.item,err.error));
-          })
+          catchError((err) => { return of(hideActionLoading(payload.item, err.error)); }
+          )
         );
       }),
    );
 
-  /*
-  @Effect()
+   @Effect()
   delete$ = this.actions$
-    .pipe(
-      ofType<GuideOneDeleted>(ActionTypes.OneDeleted),
+       .pipe(
+         ofType<Deleted>(ActionTypes.DeleteRequst),
       mergeMap(({ payload }) => {
-        this.store.dispatch(this.showActionLoadingDistpatcher);
-        return this.service.delete(payload.id);
-      }
-      ),
-      map(() => {
-        return this.hideActionLoadingDistpatcher;
-      }),
+        this.store.dispatch(showActionLoading(payload.item));
+        return this.service.delete(payload.item).pipe(
+          map(() => hideActionLoading(payload.item, null)),
+          catchError((err) => { return of(hideActionLoading(payload.item, err.error)); }
+          )
+        );
+      })
     );
 
-
-
-  @Effect()
+   @Effect()
   deleteItems$ = this.actions$
-    .pipe(
-      ofType<GuideManyDeleted>(ActionTypes.ManyDeleted),
+       .pipe(
+         ofType<ManyDeleteRequest>(ActionTypes.ManyDeleteRequest),
       mergeMap(({ payload }) => {
-        this.store.dispatch(this.showActionLoadingDistpatcher);
-        return this.service.deleteItems(payload.ids);
+        console.log(payload);
+        this.store.dispatch(showActionLoading(payload.item));
+        return this.service.deleteItems(payload.item,payload.ids).pipe(
+          map(() => {
+            this.store.dispatch(new ManyDeleted(payload))
+            return hideActionLoading(payload.item, null);
+          }),
+          catchError((err) => { return of(hideActionLoading(payload.item, err.error)); }
+          )
+        );
       }
-      ),
-      map(() => {
-        return this.hideActionLoadingDistpatcher;
-      }),
+      )
     );
+
+  /*
+ 
+
+
+
+ 
 
   @Effect()
   updateProductsStatus$ = this.actions$

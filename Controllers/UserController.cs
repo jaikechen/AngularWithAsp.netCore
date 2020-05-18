@@ -17,6 +17,8 @@ namespace Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
+   // [Authorize(Roles = ApplicationUser.ADMIN_ROLE)]
     public class UserController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -39,6 +41,9 @@ namespace Controllers
         public async Task<ActionResult<PagedResult<UserDTO>>> Get(
             int pageSize, int pageNumber, string sortField, string sortOrder, string name)
         {
+          //  var usr = User;
+          //  var appuser = await _userManager.FindByNameAsync (User.Identity.Name);
+           // _logger.LogInformation(appuser.Id);
             if (sortField == "id")
             {
                 sortField = "UserIDid";
@@ -50,13 +55,7 @@ namespace Controllers
                 );
 
             var result =  items.ToPaged(pageNumber, pageSize,sortField, sortOrder);
-            var dtoResult = new PagedResult<UserDTO>
-            {
-                totalCount = result.totalCount,
-                items = result.items
-                .Select( x => new UserDTO(x)).ToList()
-            };
-            return dtoResult;
+            return GetDTOResult(result);
         }
 
         [HttpGet("{id}")]
@@ -69,17 +68,30 @@ namespace Controllers
             }
             return new UserDTO(item);
         }
+
+        public PagedResult<UserDTO> GetDTOResult (PagedResult<ApplicationUser> result)
+        {
+             var dtoResult = new PagedResult<UserDTO>
+            {
+                totalCount = result.totalCount,
+                items = result.items
+                .Select( x => new UserDTO(x)).ToList()
+            };
+            return dtoResult;
+        }
     
+          [HttpPut()]
         public async Task<ActionResult<PagedResult<UserDTO>>> UpdateStatusOrDelete(MultUpdateDeleteAction action)
         {
             var items = _context.Users.Where(x => action.ids.Contains(x.UserIDid));
+            var result = items.ToPaged(0, action.ids.Length, "UserIDid", "desc");
+            var dtoResut = GetDTOResult(result);
             if (action.status == "delete")
             {
                 _context.RemoveRange(items);
             }
             _context.SaveChanges();
-            return items.Select(x=> new UserDTO(x))
-                .ToPaged(0, action.ids.Length, "id", "asc");
+            return dtoResut;
         }
 
         [HttpPut("{id}")]

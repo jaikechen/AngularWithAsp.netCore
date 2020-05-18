@@ -2,6 +2,8 @@
   <h1 class="text-center">
     <span>User list</span>
   </h1>
+   <mat-error> {{serverError$|async}} </mat-error>
+    <mat-spinner *ngIf="actionLoading$ | async"></mat-spinner>
 
   <div class="flex-justfy row">
       <mat-form-field class="mat-form-field-fluid col-md-6">
@@ -10,7 +12,7 @@
           <strong>Search</strong> in all fields
         </mat-hint>
       </mat-form-field>
-    <div>
+    <div style="padding:15px">
       	<button (click)="add()" mat-raised-button matTooltip="Create new Item" color="primary" type="button" >
 				<span >New </span>
 			</button>
@@ -74,7 +76,7 @@
 
       <ng-container matColumnDef="lastName">
         <mat-header-cell *matHeaderCellDef mat-sort-header>Last Name</mat-header-cell>
-        <mat-cell *matCellDef="let item">{{item.lastname}}</mat-cell>
+        <mat-cell *matCellDef="let item">{{item.lastName}}</mat-cell>
       </ng-container>
 
        <ng-container matColumnDef="role">

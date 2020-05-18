@@ -51,20 +51,20 @@ export class ModelService {
 		return this.http.put<T>( this.getURL(item) + "/" + item.id, item, { headers: httpHeader });
 	}
 
-	updateStatus<T>(item:T, ids: number[]| string[], status: string): Observable<T> {
+	updateStatus<T>(item:T, ids: number[], status: string): Observable<T> {
 		const httpHeaders = this.httpUtils.getHTTPHeaders();
     const body = { status, ids };
-		const url = this.getURL(item);
+		const url = this.getURL(item) ;
 		return this.http.put<T>(url, body, { headers: httpHeaders });
 	}
 
-	delete<T extends BaseModel>(item:T, id:number | string): Observable<T> {
-		const url = `${this.getURL(item)}/${id}`;
+	delete<T extends BaseModel>(item:T): Observable<T> {
+		const url = `${this.getURL(item)}/${item.id}`;
 		return this.http.delete<T>(url);
 	}
 
   deleteItems<T>(item: T, ids: number[] = []): Observable<QueryResultsModel> {
-		const url = this.getURL(item);
+		const url = this.getURL(item) ;
 		const httpHeaders = this.httpUtils.getHTTPHeaders();
     const body = {status:'delete', ids };
 		const result = this.http.put<QueryResultsModel>(url, body, { headers: httpHeaders} );
