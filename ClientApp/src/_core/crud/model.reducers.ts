@@ -1,15 +1,14 @@
-import { EntityState, EntityAdapter, createEntityAdapter, Update } from '@ngrx/entity';
-import { BaseModel, ModelName, getModelName } from './base.model';
+import { EntityState, EntityAdapter, createEntityAdapter,  } from '@ngrx/entity';
+import { BaseModel} from './base.model';
 import { QueryParamsModel } from './query-params.model';
 import { ModelActions, ActionTypes } from './model.action';
 
 const adapterFactory = {}
-export function getAdapter(item: ModelName): EntityAdapter<BaseModel> {
-  const entityType = getModelName(item)
-  if (adapterFactory[entityType] == null) {
-    adapterFactory[entityType] = createEntityAdapter<BaseModel>()
+export function getAdapter(type: string): EntityAdapter<BaseModel> {
+  if (adapterFactory[type] == null) {
+    adapterFactory[type] = createEntityAdapter<BaseModel>()
   }
-  return adapterFactory[entityType]
+  return adapterFactory[type]
 }
 
 export interface ModelState extends EntityState<BaseModel> {
@@ -26,12 +25,11 @@ export interface ModelState extends EntityState<BaseModel> {
   error: string;
 }
 
-function getInitialState(item: ModelName): ModelState {
+function getInitialState(type:string): ModelState {
 
-  const entityType = getModelName(item)
-  const adapter = getAdapter(entityType);
+  const adapter = getAdapter(type);
   const find = adapter.getInitialState({
-    entityType,
+    entityType:type,
     isAllItemsLoaded: false,
     itemForEdit: null,
     listLoading: false,
@@ -46,11 +44,10 @@ function getInitialState(item: ModelName): ModelState {
   return find;
 }
 
-export function getState(stateArray: ModelState[], item: ModelName): ModelState {
-  const entityType = getModelName(item)
-  let find = stateArray.find(x => x.entityType == entityType);
+export function getState(stateArray: ModelState[], type: string): ModelState {
+  let find = stateArray.find(x => x.entityType == type);
   if (find == null) {
-    find = getInitialState(entityType);
+    find = getInitialState(type);
   }
   return find;
 }
@@ -61,10 +58,12 @@ function pushState(arr: ModelState[], state: ModelState): ModelState[] {
 
 export function modelReducer(stateArr = <ModelState[]>[], action: ModelActions): ModelState[] {
   switch (action.type) {
+
     case ActionTypes.PageLoaded: {
-      const adapter = getAdapter(action.payload.item);
+      console.log(action.payload);
+      const adapter = getAdapter(action.payload.type);
       const state = adapter.addMany(action.payload.items, {
-        ...getInitialState(action.payload.item),
+        ...getInitialState(action.payload.type),
         totalCount: action.payload.totalCount,
         listLoading: false,
         lastQuery: action.payload.page,
@@ -76,7 +75,7 @@ export function modelReducer(stateArr = <ModelState[]>[], action: ModelActions):
 
 
     case ActionTypes.PageLoading: {
-      let state = getState(stateArr, action.payload.item);
+      let state = getState(stateArr, action.payload.type);
       state = {
         ...state, listLoading: action.payload.isLoading, lastCreatedId: undefined
       };
@@ -84,41 +83,41 @@ export function modelReducer(stateArr = <ModelState[]>[], action: ModelActions):
     }
 
     case ActionTypes.ActionLoading: {
-      let state = getState(stateArr, action.payload.item);
+      let state = getState(stateArr, action.payload.type);
 
       state = { ...state, actionsloading: action.payload.isLoading, error: action.payload.error }
       return pushState(stateArr, state);
     }
     case ActionTypes.Created:
       {
-        const adapter = getAdapter(action.payload.item);
-        let state = getState(stateArr, action.payload.item);
-        state = adapter.addOne(action.payload.newItem, {
+        const adapter = getAdapter(action.payload.type);
+        let state = getState(stateArr, action.payload.type);
+        state = adapter.addOne(action.payload.item, {
           ...state,
-          lastCreatedId: action.payload.newItem.id
+          lastCreatedId: action.payload.item.id
         });
         return pushState(stateArr, state);
       }
     case ActionTypes.Deleted:
       {
-        const adapter = getAdapter(action.payload.item);
-        let state = getState(stateArr, action.payload.item);
+        const adapter = getAdapter(action.payload.type);
+        let state = getState(stateArr, action.payload.type);
         state = adapter.removeOne(action.payload.id, state);
         return pushState(stateArr, state);
       }
 
     case ActionTypes.ManyDeleted:
       {
-        const adapter = getAdapter(action.payload.item);
-        let state = getState(stateArr, action.payload.item);
+        const adapter = getAdapter(action.payload.type);
+        let state = getState(stateArr, action.payload.type);
         state = adapter.removeMany(action.payload.ids, state);
         return pushState(stateArr, state);
       }
 
     case ActionTypes.Updated:
       {
-        const adapter = getAdapter(action.payload.item);
-        let state = getState(stateArr, action.payload.item);
+        const adapter = getAdapter(action.payload.type);
+        let state = getState(stateArr, action.payload.type);
         state = adapter.updateOne(action.payload.partialItems, state);
         return pushState(stateArr, state);
       }

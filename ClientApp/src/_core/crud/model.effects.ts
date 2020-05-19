@@ -1,16 +1,17 @@
 import { forkJoin } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { mergeMap, map, tap, withLatestFrom, filter, catchError, delay } from 'rxjs/operators';
-import { Effect, Actions, ofType } from '@ngrx/effects';
+import { Effect, Actions, ofType, act } from '@ngrx/effects';
 import { Store, Action, select } from '@ngrx/store';
 import { defer, Observable, of } from 'rxjs';
 
 
 import { ModelService } from './model.service';
-import { QueryResultsModel } from './query-results.model';
-import { QueryParamsModel } from './query-params.model';
 import { AppState } from '../_store/app.reducer';
-import { PageRequest, ActionTypes, showPageLoading, PageLoaded, Created, showActionLoading, hideActionLoading, Deleted, ManyDeleted, ManyDeleteRequest, CreateRequest, DeleteRequst, StatusUpdateRequest, UpdateRequest, Updated } from './model.action';
+import {
+  PageRequest, ActionTypes, showPageLoading, PageLoaded, Created, showActionLoading, hideActionLoading,
+  CreateRequest, UpdateRequest, Updated, ManyDeleteRequest, ManyDeleted, DeleteRequst, Deleted
+} from './model.action';
 
 
 @Injectable()
@@ -22,21 +23,20 @@ export class ModelEffect {
     .pipe(
       ofType<PageRequest>(ActionTypes.PageRequest),
       mergeMap(({ payload }) => {
-        this.store.dispatch(showPageLoading(payload.item));
-        const requestToServer = this.service.find(payload.item, payload.page);
-        const lastQuery = of(payload.page);
-        return forkJoin(requestToServer, lastQuery);
-      }),
-      map(response => {
-        const result: QueryResultsModel = response[0];
-        const lastQuery: QueryParamsModel = response[1];
-        console.log(result);
-        return new PageLoaded({
-          item: result.item,
-          items: result.items,
-          totalCount: result.totalCount,
-          page: lastQuery
-        });
+        this.store.dispatch(showPageLoading(payload.type));
+        const requestToServer = this.service.find(payload.type, payload.page);
+        return requestToServer.pipe(
+          map(res => {
+            var action = new PageLoaded({
+              type: payload.type,
+              page: payload.page,
+              totalCount: res.totalCount,
+              items: res.items
+            });
+            console.log(action);
+            return action;
+          })
+        );
       }),
     );
 
@@ -46,13 +46,13 @@ export class ModelEffect {
       .pipe(
         ofType<CreateRequest>(ActionTypes.CreateRequest),
         mergeMap(({ payload }) => {
-          this.store.dispatch(showActionLoading(payload.item));
-        return this.service.create(payload.item).pipe(
+          this.store.dispatch(showActionLoading(payload.type));
+        return this.service.create(payload.type,payload.item).pipe(
           map(item => {
-            this.store.dispatch(new Created({ item: payload.item, newItem: item }));
-            return hideActionLoading(payload.item, null);
+            this.store.dispatch(new Created({type:payload.type, item:item}));
+            return hideActionLoading(payload.type, null);
           }),
-          catchError((err) => { return of(hideActionLoading(payload.item, err.error)); }
+          catchError((err) => { return of(hideActionLoading(payload.type, err.error)); }
           )
         );
       }),
@@ -63,13 +63,13 @@ export class ModelEffect {
        .pipe(
          ofType<DeleteRequst>(ActionTypes.DeleteRequst),
          mergeMap(({ payload }) => {
-           this.store.dispatch(showActionLoading(payload.item));
-           return this.service.delete(payload.item, payload.id).pipe(
+           this.store.dispatch(showActionLoading(payload.type));
+           return this.service.delete(payload.type, payload.id).pipe(
              map(() => {
                this.store.dispatch(new Deleted(payload));
-               return hideActionLoading(payload.item, null)
+               return hideActionLoading(payload.type, null)
              }),
-          catchError((err) => { return of(hideActionLoading(payload.item, err.error)); } )
+          catchError((err) => { return of(hideActionLoading(payload.type, err.error)); } )
         );
       })
     );
@@ -79,13 +79,13 @@ export class ModelEffect {
     .pipe(
       ofType<UpdateRequest>(ActionTypes.UpdateRequest),
       mergeMap(({ payload }) => {
-        this.store.dispatch(showActionLoading(payload.item));
-        return this.service.update(payload.item).pipe(
+        this.store.dispatch(showActionLoading(payload.type));
+        return this.service.update(payload.type,payload.item).pipe(
           map(() => {
             this.store.dispatch(new Updated(payload))
-            return hideActionLoading(payload.item, null)
+            return hideActionLoading(payload.type, null)
           }),
-          catchError((err) => { return of(hideActionLoading(payload.item, err.error)); })
+          catchError((err) => { return of(hideActionLoading(payload.type, err.error)); })
         );
       })
     );
@@ -97,19 +97,17 @@ export class ModelEffect {
          ofType<ManyDeleteRequest>(ActionTypes.ManyDeleteRequest),
       mergeMap(({ payload }) => {
         console.log(payload);
-        this.store.dispatch(showActionLoading(payload.item));
-        return this.service.deleteItems(payload.item,payload.ids).pipe(
+        this.store.dispatch(showActionLoading(payload.type));
+        return this.service.deleteItems(payload.type,payload.ids).pipe(
           map(() => {
             this.store.dispatch(new ManyDeleted(payload))
-            return hideActionLoading(payload.item, null);
+            return hideActionLoading(payload.type, null);
           }),
-          catchError((err) => { return of(hideActionLoading(payload.item, err.error)); }
+          catchError((err) => { return of(hideActionLoading(payload.type, err.error)); }
           )
         );
-      }
-      )
+      })
     );
-
 
 
   constructor(private actions$: Actions, private service: ModelService, private store: Store<AppState>) { }

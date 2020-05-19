@@ -1,6 +1,6 @@
-import { createFeatureSelector, createSelector, MemoizedSelector } from '@ngrx/store';
-import { ModelState, getAdapter, getState } from './model.reducers';
-import { BaseModel, ModelProto, createModel } from './base.model';
+import {  createSelector } from '@ngrx/store';
+import { getState } from './model.reducers';
+import { BaseModel } from './base.model';
 import { AppState } from '../_store/app.reducer';
 import { QueryResultsModel } from './query-results.model';
 import { each } from 'lodash';
@@ -8,11 +8,11 @@ import { sortArray  } from '../_utilities/utility';
 
 const selectState = (state: AppState) => state.modelState;
 
-export const selectInStore =  (item:ModelProto ) =>
+export const selectInStore =  (type:string ) =>
    createSelector( selectState,
     stateArr => {
 
-      const state = getState(stateArr,createModel(item));
+      const state = getState(stateArr,type);
       const items: BaseModel[] = [];
       each(state.entities, e => { items.push(e) });
       const sorted = sortArray(items, state.lastQuery.sortField, state.lastQuery.sortOrder);
@@ -20,24 +20,24 @@ export const selectInStore =  (item:ModelProto ) =>
     }
   );
 
-export const selectLastCreatedModelId = (item:ModelProto) =>
-  createSelector( selectState, stateArr => getState(stateArr, createModel(item)).lastCreatedId);
+export const selectLastCreatedModelId = (type:string) =>
+  createSelector( selectState, stateArr => getState(stateArr, type).lastCreatedId);
 
-export const selectPageLoading = (item: ModelProto) =>
-  createSelector(selectState, stateArr => getState(stateArr, createModel(item)).listLoading);
+export const selectPageLoading = (type: string) =>
+  createSelector(selectState, stateArr => getState(stateArr, type).listLoading);
 
-export const selectActionLoading = (item: ModelProto) =>
-  createSelector(selectState, stateArr => getState(stateArr, createModel(item)).actionsloading);
+export const selectActionLoading = (type:string) =>
+  createSelector(selectState, stateArr => getState(stateArr, type).actionsloading);
 
-export const selectInitWaitingMessage = (item: ModelProto) => 
-  createSelector( selectState, state => getState(state, createModel(item)).showInitWaitingMessage);
+export const selectInitWaitingMessage = (type:string) => 
+  createSelector( selectState, state => getState(state, type).showInitWaitingMessage);
 
-export const selectModelById = (item: ModelProto, itemId: number) =>
-  createSelector(selectState, state =>getState(state,createModel(item)).entities[itemId]);
+export const selectModelById = (type:string, itemId: number) =>
+  createSelector(selectState, state =>getState(state,type).entities[itemId]);
 
-export const selectActionResult = (item: ModelProto) => {
+export const selectActionResult = (type: string) => {
   return createSelector(selectState, state => {
-    return getState(state, createModel(item)).error;
+    return getState(state, type).error;
   });
 }
 

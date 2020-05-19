@@ -28,32 +28,32 @@ export enum ActionTypes {
 
 export class Deleted implements Action {
 	readonly type = ActionTypes.Deleted;
-	constructor(public payload: {item: BaseModel,id:number}) { }
+	constructor(public payload: {type: string,id:number}) { }
 }
 
-export const getDeleteRequest = <T extends BaseModel>(type: new () => T, id: number) =>
-  new DeleteRequst({ item: new type(), id })
+export const getDeleteRequest = (type: string, id: number) => new DeleteRequst({ type, id })
 export class DeleteRequst implements Action {
 	readonly type = ActionTypes.DeleteRequst;
-	constructor(public payload: {item:BaseModel, id:number   }) { }
+	constructor(public payload: {type:string, id:number   }) { }
 }
 
 export class ManyDeleted implements Action {
 	readonly type = ActionTypes.ManyDeleted;
-	constructor(public payload: {item: BaseModel, ids: number[] }) { }
+	constructor(public payload: {type: string, ids: number[] }) { }
 }
 
 export const getManyDeleteRequest =
-  <T extends BaseModel>(type: new () => T, ids: number[]) => new ManyDeleteRequest({
-  item: new type(),
+  (type:string, ids: number[]) => new ManyDeleteRequest({
+  type,
   ids
 });
 
 export class ManyDeleteRequest implements Action {
 	readonly type = ActionTypes.ManyDeleteRequest;
-	constructor(public payload: {item: BaseModel, ids: number[] }) { }
+	constructor(public payload: {type: string, ids: number[] }) { }
 }
 
+/*
 export class StatusUpdateRequest implements Action {
 	readonly type = ActionTypes.StatusUpdateRequest;
 	constructor(public payload: {
@@ -71,21 +71,26 @@ export class StatusUpdated implements Action {
 		status:string 
 	}) { }
 }
+*/
 
 
-export const getCreateRequest = <T extends BaseModel>(item: T) => new CreateRequest({ item });
+export const getCreateRequest = (type:string, item: BaseModel) => new CreateRequest({type, item });
 export class CreateRequest implements Action {
   readonly type = ActionTypes.CreateRequest;
-	constructor(public payload: { item: BaseModel }) { }
+  constructor(public payload: {
+    type:string,
+    item: BaseModel
+  }) { }
 }
 export class Created implements Action {
 	readonly type = ActionTypes.Created;
-	constructor(public payload: { item: BaseModel , newItem:BaseModel}) { }
+	constructor(public payload: { item: BaseModel , type:string}) { }
 }
 
 
-export const getUpdateRequest = <T extends BaseModel>(item:T,  partialItems: Update<BaseModel>) => new UpdateRequest(
+export const getUpdateRequest = (type:string,item:BaseModel,  partialItems: Update<BaseModel>) => new UpdateRequest(
   {
+    type,
     item,
     partialItems
   });
@@ -93,7 +98,8 @@ export const getUpdateRequest = <T extends BaseModel>(item:T,  partialItems: Upd
 export class UpdateRequest implements Action {
   readonly type = ActionTypes.UpdateRequest;
 	constructor(public payload: {
-		item: BaseModel 
+    type:string,
+		item: BaseModel ,
 		partialItems: Update<BaseModel>, 
 	}) { }
 }
@@ -101,39 +107,40 @@ export class UpdateRequest implements Action {
 export class Updated implements Action {
 	readonly type = ActionTypes.Updated;
 	constructor(public payload: {
-		item: BaseModel 
+    type:string,
+		item: BaseModel,
 		partialItems: Update<BaseModel>, 
 	}) { }
 }
 
 export class PageRequest  implements Action {
 	readonly type = ActionTypes.PageRequest;
-	constructor(public payload: {item: BaseModel, page: QueryParamsModel }) { }
+	constructor(public payload: {type: string, page: QueryParamsModel }) { }
 }
-export const GetPageRequested = <T extends BaseModel>(type: new () => T, page: QueryParamsModel) =>
-  new PageRequest({ item: new type(), page });
+export const getPageRequested = (type: string, page: QueryParamsModel) => new PageRequest({ type, page });
 
 export class PageLoaded  implements Action {
 	readonly type = ActionTypes.PageLoaded;
-	constructor(public payload: { item: BaseModel,items: BaseModel[], totalCount: number, page: QueryParamsModel }) { }
+	constructor(public payload: { type: string,items: BaseModel[], totalCount: number, page: QueryParamsModel }) { }
 }
 
-export const showPageLoading = (item: BaseModel) => new PageLoading({ item, isLoading: true });
+export const showPageLoading = (type: string) => new PageLoading({ type, isLoading: true });
 export class PageLoading  implements Action {
 	readonly type = ActionTypes.PageLoading;
-	constructor(public payload: {item: BaseModel, isLoading: boolean }) { }
+	constructor(public payload: {type: string, isLoading: boolean }) { }
 }
 
 export const ACTION_SUCCESS = "Action Sucess";
 
-export const showActionLoading = (item: BaseModel) => new ActionLoading({ item, isLoading: true, error:null });
-export const hideActionLoading = (item: BaseModel, error: string) => new ActionLoading({
-  item, isLoading: false,
+export const showActionLoading = (type: string) => new ActionLoading({ type, isLoading: true, error:null });
+export const hideActionLoading = (type: string, error: string) => new ActionLoading({
+  type, isLoading: false,
   error:error == null ? ACTION_SUCCESS: error });
+
 export class ActionLoading  implements Action {
 	readonly type = ActionTypes.ActionLoading;
   constructor(public payload: {
-    item: BaseModel,
+    type: string,
     isLoading: boolean,
     error: string
   }) { }
@@ -144,8 +151,10 @@ export type ModelActions = CreateRequest
   | Created
   | UpdateRequest
   | Updated
+  /*
   | StatusUpdateRequest
   | StatusUpdated
+  */
   | DeleteRequst
   | Deleted
   | ManyDeleteRequest

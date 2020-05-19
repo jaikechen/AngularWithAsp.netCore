@@ -9,8 +9,7 @@ import { BaseModel } from './base.model';
 import { AppState } from '../_store/app.reducer';
 import {  selectInitWaitingMessage, selectPageLoading, selectInStore } from './model.selectors';
 
-export class ModelDataSource<T extends BaseModel> implements DataSource<BaseModel> {
-  item: T;
+export class ModelDataSource implements DataSource<BaseModel> {
 	entitySubject = new BehaviorSubject<any[]>([]);
 	hasItems = true; 
 
@@ -22,11 +21,9 @@ export class ModelDataSource<T extends BaseModel> implements DataSource<BaseMode
 	subscriptions: Subscription[] = [];
 
   constructor(
-    type: new () => T,
-    
+    private type: string,
     private store: Store<AppState>
   ) {
-    this.item = new type();
 		this.paginatorTotal$ = this.paginatorTotalSubject.asObservable();
 		const hasItemsSubscription = this.paginatorTotal$.pipe(
 			distinctUntilChanged(),
@@ -34,13 +31,13 @@ export class ModelDataSource<T extends BaseModel> implements DataSource<BaseMode
 		).subscribe(res => this.hasItems = res > 0);
 		this.subscriptions.push(hasItemsSubscription);
     this.loading$ = this.store.pipe(
-      select(selectPageLoading(this.item)),
+      select(selectPageLoading(this.type)),
 		);
 		this.isPreloadTextViewed$ = this.store.pipe(
-			select(selectInitWaitingMessage(this.item))
+			select(selectInitWaitingMessage(this.type))
 		);
     this.store.pipe(
-      select(selectInStore(this.item)),
+      select(selectInStore(this.type)),
 		).subscribe((response: QueryResultsModel) => {
 			this.paginatorTotalSubject.next(response.totalCount);
 			this.entitySubject.next(response.items);

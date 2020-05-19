@@ -5,7 +5,7 @@ import { Observable, BehaviorSubject, Subscription, of } from 'rxjs';
 import { delay, filter, first } from 'rxjs/operators';
 import { Store, select } from '@ngrx/store';
 import { MatDialog } from '@angular/material/dialog';
-import { User } from './User';
+import { User, USER_TYPE } from './User';
 import { AppState } from '../../_core/_store/app.reducer';
 import { ModelService } from '../../_core/crud/model.service';
 import { selectModelById,  selectPageLoading, selectActionLoading, selectActionResult} from '../../_core/crud/model.selectors';
@@ -39,23 +39,23 @@ export class UserEditComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    
-    this.pageLoading$ = this.store.pipe( select(selectPageLoading(User)));
-    this.actionLoading$ = this.store.pipe(select(selectActionLoading(User)));
-    this.serverError$ = this.store.pipe(select(selectActionResult(User)), filter(x => !!x && x != ACTION_SUCCESS)); 
+
+    this.pageLoading$ = this.store.pipe(select(selectPageLoading(USER_TYPE)));
+    this.actionLoading$ = this.store.pipe(select(selectActionLoading(USER_TYPE)));
+    this.serverError$ = this.store.pipe(select(selectActionResult(USER_TYPE)), filter(x => !!x && x != ACTION_SUCCESS)); 
     this.createForm();
 
     this.activatedRoute.params.subscribe(params => {
       const id = params.id;
       if (id && id > 0) {
         this.store.pipe(
-          select(selectModelById(User,id))
+          select(selectModelById(USER_TYPE,id))
         ).subscribe(result => {
           if (!!result) {
             this.loadItem(result);
           }
           else {
-            this.modelService.getById(User, id).subscribe(res => {
+            this.modelService.getById(USER_TYPE, id).subscribe(res => {
               this.loadItem(res, true);
             });
           }
@@ -140,10 +140,10 @@ export class UserEditComponent implements OnInit, OnDestroy {
 
 
   addItem(_item: User) {
-    this.store.dispatch(getCreateRequest(_item));
+    this.store.dispatch(getCreateRequest(USER_TYPE, _item));
    this.store.pipe(
-      delay(1),
-      select(selectActionResult(User)),
+     delay(1),
+     select(selectActionResult(USER_TYPE)),
       filter(x => x == ACTION_SUCCESS),
       first()
     ).subscribe(() => {
@@ -158,11 +158,11 @@ export class UserEditComponent implements OnInit, OnDestroy {
       changes: item
     };
 
-    this.store.dispatch(getUpdateRequest(item, updateItem));
+    this.store.dispatch(getUpdateRequest(USER_TYPE,item, updateItem));
 
     this.store.pipe(
       delay(1),
-      select(selectActionResult(User)),
+      select(selectActionResult(USER_TYPE)),
       filter(x => x == ACTION_SUCCESS),
       first()
     ).subscribe(() => {

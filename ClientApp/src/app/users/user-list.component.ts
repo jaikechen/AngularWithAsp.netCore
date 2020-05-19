@@ -12,10 +12,10 @@ import { fromEvent, merge, Subscription, of, Observable } from 'rxjs';
 import { Store, select  } from '@ngrx/store';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ModelDataSource } from '../../_core/crud/model.datasource';
-import { User } from './User';
+import { User, USER_TYPE } from './User';
 import { AppState } from '../../_core/_store/app.reducer';
 import { QueryParamsModel } from '../../_core/crud/query-params.model';
-import {  GetPageRequested, ManyDeleteRequest, getManyDeleteRequest, DeleteRequst, getDeleteRequest, ACTION_SUCCESS } from '../../_core/crud/model.action';
+import {  getPageRequested, ManyDeleteRequest, getManyDeleteRequest, DeleteRequst, getDeleteRequest, ACTION_SUCCESS } from '../../_core/crud/model.action';
 import { ConfirmDialogModel, createConfirmDialog } from '../_share/confirm.dialog.component';
 import { selectActionLoading, selectActionResult,  } from '../../_core/crud/model.selectors';
 // Services and Model
@@ -26,7 +26,7 @@ import { selectActionLoading, selectActionResult,  } from '../../_core/crud/mode
 })
 
 export class UserListComponent implements OnInit, OnDestroy {
-	dataSource: ModelDataSource<User>;
+	dataSource: ModelDataSource;
   displayedColumns = ['select', 'userName', 'firstName', 'lastName','phoneNumber','role','actions'];
 
 	@ViewChild(MatPaginator, {static: true}) paginator: MatPaginator;
@@ -51,8 +51,8 @@ export class UserListComponent implements OnInit, OnDestroy {
 
 	ngOnInit() {
 
-    this.actionLoading$ = this.store.pipe(select(selectActionLoading(User)));
-    this.serverError$ = this.store.pipe(select(selectActionResult(User)), filter(x => !!x && x != ACTION_SUCCESS));
+    this.actionLoading$ = this.store.pipe(select(selectActionLoading(USER_TYPE)));
+    this.serverError$ = this.store.pipe(select(selectActionResult(USER_TYPE)), filter(x => !!x && x != ACTION_SUCCESS));
 
 		const sortSubscription = this.sort.sortChange.subscribe(() => (this.paginator.pageIndex = 0));
 		this.subscriptions.push(sortSubscription);
@@ -75,7 +75,7 @@ export class UserListComponent implements OnInit, OnDestroy {
 		this.subscriptions.push(searchSubscription);
 
     // Init DataSource
-    this.dataSource = new ModelDataSource(User,this.store);
+    this.dataSource = new ModelDataSource(USER_TYPE,this.store);
 		const entitiesSubscription = this.dataSource.entitySubject.pipe(
 			skip(1),
 			distinctUntilChanged()
@@ -103,7 +103,7 @@ export class UserListComponent implements OnInit, OnDestroy {
 			this.paginator.pageSize,
 			
     );
-    this.store.dispatch(GetPageRequested(User, queryParams ));
+    this.store.dispatch(getPageRequested(USER_TYPE, queryParams));
 		this.selection.clear();
 	}
 
@@ -129,7 +129,7 @@ export class UserListComponent implements OnInit, OnDestroy {
     const dialogRef = createConfirmDialog(title, description, this.dialog);
     dialogRef.afterClosed().subscribe(dialogResult => {
       if (!!dialogResult) {
-        this.store.dispatch(getDeleteRequest(User,item.id))
+        this.store.dispatch(getDeleteRequest(USER_TYPE,item.id))
       }
     });
  	}
@@ -142,7 +142,7 @@ export class UserListComponent implements OnInit, OnDestroy {
 		dialogRef.afterClosed().subscribe(res => {
       if (!!res) {
         const ids = this.selection.selected.map(x => x.id);
-        this.store.dispatch(getManyDeleteRequest(User, ids));
+        this.store.dispatch(getManyDeleteRequest(USER_TYPE, ids));
 			}
 		});
 	}
@@ -155,43 +155,10 @@ export class UserListComponent implements OnInit, OnDestroy {
 				id: elem.id.toString(),
 			});
 		});
-		//this.layoutUtilsService.fetchElements(messages);
 	}
 
-	/**
-	 * Show UpdateStatuDialog for selected customers
-	 */
-	updateStatus() {
-		const _title = "Update Item";
-		const _updateMessage = "The item has been updated";
-		const _statuses = [{ value: 0, text: 'Suspended' }, { value: 1, text: 'Active' }, { value: 2, text: 'Pending' }];
-		const _messages = [];
 
-		this.selection.selected.forEach(elem => {
-			_messages.push({
-				text: `${elem.firstName}`,
-				id: elem.id.toString(),
-			});
-		});
-
-    /*
-		const dialogRef = this.layoutUtilsService.updateStatusForEntities(_title, _statuses, _messages);
-		dialogRef.afterClosed().subscribe(res => {
-			if (!res) {
-				this.selection.clear();
-				return;
-			}
-
-			this.layoutUtilsService.showActionNotification(_updateMessage, MessageType.Update, 10000, true, true);
-			this.selection.clear();
-		});
-    */
-	}
-
-	/**
-	 * Show add customer dialog
-	 */
-  add() {
+   add() {
     this.router.navigate(['/users/add']);
 
 	}
@@ -199,21 +166,14 @@ export class UserListComponent implements OnInit, OnDestroy {
 	edit(item: User) {
 
     this.router.navigate(['/users/edit', item.id]);
-//    this.router.navigate(['guides/edit', item.id], { relativeTo: this.activatedRoute });
 	}
 
-	/**
-	 * Check all rows are selected
-	 */
 	isAllSelected(): boolean {
 		const numSelected = this.selection.selected.length;
 		const numRows = this.result.length;
 		return numSelected === numRows;
 	}
 
-	/**
-	 * Toggle all selections
-	 */
 	masterToggle() {
 		if (this.selection.selected.length === this.result.length) {
 			this.selection.clear();
