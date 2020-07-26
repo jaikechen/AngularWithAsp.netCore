@@ -1,6 +1,6 @@
 # AngularWithAsp.netCore
 This project was built on Viusal studio 2019 Angular Spa whith Asp.net core web api tmeplate.
-I made the CRUD state management functions generic, so when adding new CRUD pages, I can reuse the state managment code. 
+I made the ngRx state management functions generic, so when adding new CRUD pages, I can reuse the state managment code. 
 ## Purpose 
 Recently, I had some projects with smiliar requirments,  Like 
 - Authentication and autorization
