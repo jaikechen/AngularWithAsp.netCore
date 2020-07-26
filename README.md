@@ -28,19 +28,19 @@ while using SPA router and ajax, the page dosn't reload, the page only retrieves
 if the cache is a normal gobal array in javascript, the user-edit pag need to inform user-list page. that will make managing state in browser complex. With Angular ngRx, if a page change state, then all other page get informed by ngRX automatically.
 ## File struture 
 
--controlers
------------[model]Controller.cs
--clinetApp/src/
---------------_core/crud/
-------------------------model.action.ts
-------------------------model.datasource.ts
-------------------------model.effect.ts
-------------------------model.reducer.ts
-------------------------model.selector.ts
-------------------------model.service.ts
--------------app/[model]/
--------------------------[model]-list.ts
--------------------------[model]-edit.ts
+- controlers
+- ----------[model]Controller.cs
+- clinetApp/src/
+- -------------_core/crud/
+- -----------------------model.action.ts
+- -----------------------model.datasource.ts
+- -----------------------model.effect.ts
+- -----------------------model.reducer.ts
+- -----------------------model.selector.ts
+- -----------------------model.service.ts
+- ------------app/[model]/
+- ------------------------[model]-list.ts
+- ------------------------[model]-edit.ts
 ## workflow of Edit an entity
 take the user entity as example
 1. on user-list page, 
