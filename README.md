@@ -1,6 +1,6 @@
 # AngularWithAsp.netCore
 This project was built on Viusal studio 2019 Angular Spa whith Asp.net core web api tmeplate.
-
+I made the CRUD state management functions generic, so when adding new CRUD pages, I can reuse the state managment code. 
 ## Purpose 
 Recently, I had some projects with smiliar requirments,  Like 
 - Authentication and autorization
@@ -21,15 +21,13 @@ Every time a user entity was edited, the entire user-list.aspx need to refresh t
 
 ### with spa and State
 while using SPA router and ajax, the page dosn't reload, the page only retrieves the partial data it needs(usually json). So it possible to save state in broswer.
-- user-list page, the page cache all user entities
+- user-list page, the browser caches all user entities
 - user-edit page, it get user directly from cache, then it submit changes to backend, then it update the cache.
 
 ### ngRx
-if the cache is a normal gobal array in javascript, the user-edit pag need to inform user-list page. that will make managing state in browser complex. With Angular ngRx, if a page change state, then all other page get informed by ngRX automatically.
+if the cache is a normal gobal array in javascript, the user-edit page needs to inform user-list page. that will make managing state in browser complex. With Angular ngRx, if a page change state, then all other page get informed by ngRX automatically.
 ## File struture 
 
-- controlers
-- ----------[model]Controller.cs
 - clinetApp/src/
 - -------------_core/crud/
 - -----------------------model.action.ts
@@ -41,10 +39,14 @@ if the cache is a normal gobal array in javascript, the user-edit pag need to in
 - ------------app/[model]/
 - ------------------------[model]-list.ts
 - ------------------------[model]-edit.ts
+
+- controlers
+- ----------[model]Controller.cs
+
 ## workflow of Edit an entity
 take the user entity as example
 1. on user-list page, 
-1.1 initialize model.datasource, when model.datasource is constructing, it subscribe to the selector 'selectInStore'
+1.1 initialize model.datasource, when model.datasource is constructing, it subscribe to the selector 'selectInStore', if it get payload, it emit the payload to entitySubject
 ```
   this.store.pipe(
       select(selectInStore(this.type)),
@@ -53,7 +55,7 @@ take the user entity as example
 			this.entitySubject.next(response.items);
 		});
 ```
-1.2 user-list page subscripts to the entitySubject in model.datasource
+1.2 user-list page subscripts to the entitySubject 
 ```
 	const entitiesSubscription = this.dataSource.entitySubject.pipe(
 			skip(1),
@@ -92,3 +94,20 @@ take the user entity as example
 3. in model.reducer, get the pageLoaded action, then it update the state, put the result to state
 4. thanks to Rxjs, user-list page get notified, then it re-render the page.
 
+## make ngRx generic
+So if I create a set of selector,reducer, effect, service, datasource for each entity, there could be to many redandant codes.
+To make my code generic, I decided to make them generic.
+Taking creating entity as example.
+### model.service.ts
+the Angular http lib is generic by it self. so make create function generaic is easy,  the create function
+```
+	create(type:string , item: BaseModel  ):Observable< BaseModel> {
+		var httpHeaders = this.httpUtils.getHTTPHeaders();
+		return this.http.post<BaseModel>(this.getUrl(type), item, { headers: httpHeaders});
+	}
+```
+```
+  getUrl(type: string) {
+    return `api/${type}`;
+  }
+```
