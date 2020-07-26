@@ -67,11 +67,11 @@ take the user entity as example
     this.store.dispatch(getPageRequested(USER_TYPE, queryParams));
 ```
 
-2. model.effect.ts got the action, invokes model.service
+2. model.effect.ts gets the action, invokes model.service
 ```
    const requestToServer = this.service.find(payload.type, payload.page);
 ```
-2.1 model.service.ts got invoked, then call the web api
+2.1 model.service.ts gets invoked, then calls the web api
 ```
 	const result = this.http.get<QueryResultsModel>(url, {
 			headers: httpHeaders,
@@ -89,6 +89,6 @@ take the user entity as example
             var result =  items.ToPaged(pageNumber, pageSize,sortField, sortOrder);
 ```
 2.3 the model.effect dispatch another action PageLoaded
-3. in model.reducer, get the pageLoaded action, then it update the state, put the result to stae
+3. in model.reducer, get the pageLoaded action, then it update the state, put the result to state
 4. thanks to Rxjs, user-list page get notified, then it re-render the page.
 
