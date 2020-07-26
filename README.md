@@ -26,8 +26,69 @@ while using SPA router and ajax, the page dosn't reload, the page only retrieves
 
 ### ngRx
 if the cache is a normal gobal array in javascript, the user-edit pag need to inform user-list page. that will make managing state in browser complex. With Angular ngRx, if a page change state, then all other page get informed by ngRX automatically.
+## File struture 
 
+-controlers
+-----------[model]Controller.cs
+-clinetApp/src/
+--------------_core/crud/
+------------------------model.action.ts
+------------------------model.datasource.ts
+------------------------model.effect.ts
+------------------------model.reducer.ts
+------------------------model.selector.ts
+------------------------model.service.ts
+-------------app/[model]/
+-------------------------[model]-list.ts
+-------------------------[model]-edit.ts
 ## workflow of Edit an entity
+take the user entity as example
+1. on user-list page, 
+1.1 initialize model.datasource, when model.datasource is constructing, it subscribe to the selector 'selectInStore'
+```
+  this.store.pipe(
+      select(selectInStore(this.type)),
+		).subscribe((response: QueryResultsModel) => {
+			this.paginatorTotalSubject.next(response.totalCount);
+			this.entitySubject.next(response.items);
+		});
+```
+1.2 user-list page subscripts to the entitySubject in model.datasource
+```
+	const entitiesSubscription = this.dataSource.entitySubject.pipe(
+			skip(1),
+			distinctUntilChanged()
+		).subscribe(res => {
+			this.result = res;
+		});
+```
+1.3 dispatch the action 
+```
+    this.store.dispatch(getPageRequested(USER_TYPE, queryParams));
+```
 
+2. model.effect.ts got the action, invokes model.service
+```
+   const requestToServer = this.service.find(payload.type, payload.page);
+```
+2.1 model.service.ts got invoked, then call the web api
+```
+	const result = this.http.get<QueryResultsModel>(url, {
+			headers: httpHeaders,
+			params:  httpParams
+		});
+```
+2.2 in webapi, userController.cs, user entityFramework to get user list
+```
+            var items = _context.ApplicationUser 
+                .Where(x => string.IsNullOrWhiteSpace(name) 
+                || x.FirstName.Contains(name)
+                || x.LastName.Contains(name)
+                );
 
+            var result =  items.ToPaged(pageNumber, pageSize,sortField, sortOrder);
+```
+2.3 the model.effect dispatch another action PageLoaded
+3. in model.reducer, get the pageLoaded action, then it update the state, put the result to stae
+4. thanks to Rxjs, user-list page get notified, then it re-render the page.
 
